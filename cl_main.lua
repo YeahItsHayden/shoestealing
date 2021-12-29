@@ -1,14 +1,50 @@
-function stealShoes(ent)
-    stealShoesEmote()
-    SetPedComponentVariation(ent, 6, 34, 0, 0)
+RegisterNetEvent("shoestealing:takeShoes", function(ent)
+    SetPedComponentVariation(PlayerPedId(), 6, 34, 0, 0) 
+end)
+
+function getClosestPlayer()
+    local ped = PlayerPedId()
+    if coords then
+        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
+    else
+        coords = GetEntityCoords(ped)
+    end
+    local closestPlayers = getPlyFromCoords(coords)
+    local closestDistance = -1
+    local closestPlayer = -1
+    for i = 1, #closestPlayers, 1 do
+        if closestPlayers[i] ~= PlayerId() and closestPlayers[i] ~= -1 then
+            local pos = GetEntityCoords(GetPlayerPed(closestPlayers[i]))
+            local distance = #(pos - coords)
+
+            if closestDistance == -1 or closestDistance > distance then
+                closestPlayer = closestPlayers[i]
+                closestDistance = distance
+            end
+        end
+    end
+    return closestPlayer, closestDistance
 end
 
-function getPedPlayerIsLookingAt()
-	local plyPos = GetEntityCoords(PlayerPedId())
-	local plyOffset = GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.3, 0.0)
-	local rH = StartShapeTestCapsule(plyPos.x, plyPos.y, plyPos.z, plyOffset.x, plyOffset.y, plyOffset.z, 1.0, 12, PlayerPedId(), 7)
-	local _, _, _, _, ent = GetShapeTestResult(rH)
-	return ent
+function getPlyFromCoords()
+    local players = GetActivePlayers()
+    local ped = PlayerPedId()
+    if coords then
+        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
+    else
+        coords = GetEntityCoords(ped)
+    end
+    local distance = distance or 5
+    local closePlayers = {}
+    for _, player in pairs(players) do
+        local target = GetPlayerPed(player)
+        local targetCoords = GetEntityCoords(target)
+        local targetdistance = #(targetCoords - coords)
+        if targetdistance <= distance then
+            closePlayers[#closePlayers + 1] = player
+        end
+    end
+    return closePlayers
 end
 
 function stealShoesEmote()
@@ -21,12 +57,13 @@ function stealShoesEmote()
 end
 
 RegisterCommand("stealshoes", function()
-    local player = getPedPlayerIsLookingAt()
-    local ply = PlayerPedId()
+    local player = getClosestPlayer(GetEntityCoords(PlayerPedId()))
+    local id = GetPlayerServerId(player)
 
-    if IsPedAPlayer(player) then
-    	if GetPedDrawableVariation(player, 6) ~= config.shoes then 
-            stealShoes(player)
+    if player ~= -1 then
+        if GetPedDrawableVariation(player, 6) ~= config.shoes then
+            stealShoesEmote() 
+            TriggerServerEvent("shoeting", id)
         end
     end
 end, false)
