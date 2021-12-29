@@ -26,8 +26,6 @@ RegisterCommand("stealshoes", function()
     local ply = PlayerPedId()
 
     if IsPedAPlayer(player) then
-        if not config.shoes == GetPedDrawableVariation(player, 6) then 
-            stealShoes(player)
-        end
+       stealShoes(player)
     end
 end, false)
