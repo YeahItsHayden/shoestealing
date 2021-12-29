@@ -18,7 +18,6 @@ function stealShoesEmote()
     RequestAnimDict(dict)
     while (not HasAnimDictLoaded(dict)) do Wait(0) end
 	TaskPlayAnim(Ped, dict, "pickup_low", 3.0, 3.0, 1200, 0, 0, false, false, false)
-	local Pause = 1200-500 if Pause < 500 then Pause = 500 end
 end
 
 RegisterCommand("stealshoes", function()
